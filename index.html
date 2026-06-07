@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Everything in Price</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface2: #18181f;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #f0f0f0;
+  --muted: #888;
+  --faint: #444;
+  --accent-b: #4285F4;
+  --accent-r: #EA4335;
+  --accent-y: #FBBC05;
+  --accent-g: #34A853;
+  --up: #34A853;
+  --dn: #EA4335;
+  --font-display: 'Rajdhani', 'Arial Narrow', sans-serif;
+  --font-body: 'Rajdhani', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Share Tech Mono', monospace;
+}
+
+html { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+body { min-height: 100vh; overflow-x: hidden; }
+
+/* ── Noise overlay ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+
+/* ── Ambient glow ── */
+.glow-b { position: fixed; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(66,133,244,0.07) 0%, transparent 70%); top: -200px; left: -100px; pointer-events: none; z-index: 0; }
+.glow-r { position: fixed; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(234,67,53,0.06) 0%, transparent 70%); bottom: -150px; right: -50px; pointer-events: none; z-index: 0; }
+
+/* ── Ticker ── */
+.ticker-wrap { position: relative; z-index: 10; border-bottom: 1px solid var(--border); overflow: hidden; height: 34px; display: flex; align-items: center; background: var(--surface); }
+.ticker-track { display: flex; gap: 0; animation: scroll-left 40s linear infinite; white-space: nowrap; }
+.ticker-track:hover { animation-play-state: paused; }
+.tick-item { display: inline-flex; align-items: center; gap: 8px; padding: 0 24px; border-right: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px; height: 34px; }
+.tick-sym { color: var(--text); font-weight: 500; }
+.tick-px { color: var(--muted); }
+.tick-up { color: var(--up); }
+.tick-dn { color: var(--dn); }
+@keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+/* ── Header ── */
+header { position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 18px 40px; border-bottom: 1px solid var(--border); }
+.brand { font-family: var(--font-display); font-size: 18px; font-style: italic; color: var(--text); letter-spacing: -0.3px; }
+.brand span { font-style: normal; }
+nav { display: flex; gap: 24px; }
+nav a { font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.5px; text-transform: uppercase; transition: color 0.15s; }
+nav a:hover { color: var(--text); }
+
+/* ── Hero ── */
+.hero { position: relative; z-index: 10; text-align: center; padding: 80px 40px 60px; }
+.hero-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; justify-content: center; }
+.eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--up); display: inline-block; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+.hero-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(36px, 6vw, 72px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -1px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+.hero-title .word-e { 
+  background: linear-gradient(90deg, #e0f7ff 0%, #7dd3fc 40%, #38bdf8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-title .word-in {
+  font-size: 0.45em; vertical-align: middle; letter-spacing: 4px;
+  -webkit-text-fill-color: transparent; color: transparent;
+  -webkit-background-clip: unset; background-clip: unset;
+  color: #334155; font-family: 'IBM Plex Mono', monospace; font-weight: 400;
+}
+.hero-title .word-p {
+  background: linear-gradient(90deg, #f8fafc 0%, #cbd5e1 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.hero-sub { font-size: 15px; color: var(--muted); max-width: 480px; margin: 0 auto 48px; line-height: 1.7; }
+.hero-sub em { color: var(--text); font-style: normal; }
+
+/* ── Search ── */
+.search-container { max-width: 680px; margin: 0 auto 20px; position: relative; z-index: 10; }
+.search-outer {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 14px 20px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.search-outer:focus-within { border-color: rgba(255,255,255,0.25); background: var(--surface); }
+.search-outer input {
+  flex: 1; background: none; border: none; outline: none;
+  font-family: var(--font-body); font-size: 15px; color: var(--text);
+}
+.search-outer input::placeholder { color: var(--faint); }
+.search-btn {
+  background: var(--text); color: var(--bg);
+  border: none; border-radius: 3px;
+  font-family: var(--font-body); font-size: 12px; font-weight: 700;
+  padding: 7px 16px; cursor: pointer; letter-spacing: 0.5px;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.search-btn:hover { opacity: 0.85; }
+.search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 48px; max-width: 680px; margin-left: auto; margin-right: auto; }
+.chip {
+  font-family: var(--font-mono); font-size: 11px;
+  padding: 5px 12px; border-radius: 2px;
+  border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+  background: none;
+}
+.chip:hover { border-color: var(--border2); color: var(--text); }
+
+/* ── Examples ── */
+.examples { position: relative; z-index: 10; max-width: 900px; margin: 0 auto 80px; padding: 0 40px; }
+.examples-label { font-family: var(--font-mono); font-size: 10px; color: var(--faint); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; text-align: center; }
+.examples-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.ex-card {
+  background: var(--surface); padding: 20px; cursor: pointer;
+  transition: background 0.12s;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.ex-card:hover { background: var(--surface2); }
+.ex-q { font-size: 14px; line-height: 1.5; color: var(--text); }
+.ex-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.ex-tag {
+  font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 7px; border-radius: 1px;
+  letter-spacing: 0.3px;
+}
+.t-geo { background: rgba(66,133,244,0.12); color: #4285F4; }
+.t-macro { background: rgba(52,168,83,0.12); color: #34A853; }
+.t-crypto { background: rgba(251,188,5,0.12); color: #FBBC05; }
+.t-eq { background: rgba(234,67,53,0.12); color: #EA4335; }
+.t-comm { background: rgba(255,255,255,0.07); color: var(--muted); }
+
+/* ── Result area ── */
+.result-area { position: relative; z-index: 10; max-width: 820px; margin: 0 auto 80px; padding: 0 40px; display: none; }
+.result-area.visible { display: block; }
+.result-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+.result-query { font-family: var(--font-display); font-size: 22px; font-style: italic; color: var(--text); }
+.result-badge { font-family: var(--font-mono); font-size: 10px; color: var(--muted); border: 1px solid var(--border); padding: 3px 8px; border-radius: 2px; white-space: nowrap; }
+.result-body { font-size: 14px; line-height: 1.8; color: #ccc; }
+.result-body h2 { font-family: var(--font-body); font-size: 13px; font-weight: 700; color: var(--text); letter-spacing: 1px; text-transform: uppercase; margin: 28px 0 12px; padding-top: 20px; border-top: 1px solid var(--border); }
+.result-body h2:first-child { margin-top: 0; border-top: none; padding-top: 0; }
+.result-body h3 { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 20px 0 8px; font-weight: 500; }
+.result-body p { margin-bottom: 12px; }
+.result-body table { width: 100%; border-collapse: collapse; margin: 12px 0; font-family: var(--font-mono); font-size: 12px; }
+.result-body th { text-align: left; color: var(--muted); font-weight: 400; padding: 6px 10px; border-bottom: 1px solid var(--border); }
+.result-body td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: #ccc; }
+.result-body tr:last-child td { border-bottom: none; }
+.result-body blockquote { border-left: 2px solid var(--accent-b); padding: 10px 16px; background: rgba(66,133,244,0.05); border-radius: 0 3px 3px 0; margin: 16px 0; font-style: italic; color: var(--text); }
+.result-body strong { color: var(--text); font-weight: 500; }
+.result-body code { font-family: var(--font-mono); font-size: 12px; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 2px; }
+.result-body ul { padding-left: 20px; margin-bottom: 12px; }
+.result-body li { margin-bottom: 6px; }
+
+.thinking { display: flex; align-items: center; gap: 10px; color: var(--muted); font-family: var(--font-mono); font-size: 12px; padding: 20px 0; }
+.thinking-dots span { animation: blink 1.4s ease-in-out infinite; display: inline-block; }
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100%{opacity:0} 40%{opacity:1} }
+
+.sources-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
+.src-chip { font-family: var(--font-mono); font-size: 10px; color: var(--faint); border: 1px solid var(--border); padding: 3px 8px; border-radius: 2px; }
+
+/* ── Methodology strip ── */
+.method-strip { position: relative; z-index: 10; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 48px 40px; max-width: 900px; margin: 0 auto 60px; }
+.method-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); }
+.method-card { background: var(--bg); padding: 24px 20px; }
+.method-num { font-family: var(--font-mono); font-size: 11px; color: var(--faint); margin-bottom: 12px; }
+.method-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.method-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+/* ── Data sources ── */
+.sources-section { position: relative; z-index: 10; max-width: 900px; margin: 0 auto 80px; padding: 0 40px; }
+.section-label { font-family: var(--font-mono); font-size: 10px; color: var(--faint); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px; }
+.sources-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+.src-card { background: var(--surface); padding: 16px 18px; }
+.src-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.src-type { font-family: var(--font-mono); font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+.src-desc { font-size: 12px; color: var(--faint); line-height: 1.5; }
+.src-free { font-family: var(--font-mono); font-size: 9px; color: var(--up); border: 1px solid rgba(52,168,83,0.3); padding: 1px 5px; border-radius: 1px; display: inline-block; margin-top: 4px; }
+
+/* ── Footer ── */
+footer { position: relative; z-index: 10; border-top: 1px solid var(--border); padding: 24px 40px; display: flex; align-items: center; justify-content: space-between; }
+.footer-left { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
+.footer-right { display: flex; gap: 20px; }
+.footer-right a { font-family: var(--font-mono); font-size: 11px; color: var(--faint); text-decoration: none; }
+.footer-right a:hover { color: var(--muted); }
+
+/* ── Lucky ── */
+.lucky-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-family: var(--font-body); font-size: 12px; padding: 8px 18px; cursor: pointer; transition: border-color 0.12s, color 0.12s; border-radius: 2px; }
+.lucky-btn:hover { border-color: var(--border2); color: var(--text); }
+
+@media (max-width: 700px) {
+  header { padding: 14px 20px; }
+  nav { display: none; }
+  .hero { padding: 50px 20px 40px; }
+  .examples { padding: 0 20px; }
+  .examples-grid { grid-template-columns: 1fr; }
+  .method-grid { grid-template-columns: 1fr; }
+  .result-area { padding: 0 20px; }
+  .sources-section { padding: 0 20px; }
+  footer { flex-direction: column; gap: 12px; padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="glow-b"></div>
+<div class="glow-r"></div>
+
+<!-- Ticker -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="brand" style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;letter-spacing:1px;text-transform:uppercase;background:linear-gradient(90deg,#7dd3fc,#f8fafc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Everything in Price</div>
+  <nav>
+    <a href="#methodology">Methodology</a>
+    <a href="#sources">Data Sources</a>
+    <a href="https://github.com/komako-workshop/digital-oracle" target="_blank">GitHub ↗</a>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="eyebrow-dot"></span>
+    Markets don't lie · 14 live data sources · zero opinions
+  </div>
+  <h1 class="hero-title">
+    <span class="word-e">Everything</span><br>
+    <span class="word-in">——</span>
+    <span class="word-p">in Price</span>
+  </h1>
+  <p class="hero-sub">
+    Ask any question about <em>geopolitics, markets, or macro.</em><br>
+    We answer only with trading data — prices, positioning, derivatives, yields.
+  </p>
+
+  <div class="search-container">
+    <div class="search-outer">
+      <input type="text" id="q" placeholder="WW3 的概率是多少？比特币到底了吗？AI 是泡沫吗？" autocomplete="off" />
+      <button class="search-btn" id="go-btn" onclick="doSearch()">ORACLE SEARCH</button>
+    </div>
+  </div>
+
+  <div class="chips">
+    <button class="chip" onclick="fill('WW3 概率')">WW3 概率</button>
+    <button class="chip" onclick="fill('比特币周期')">比特币周期</button>
+    <button class="chip" onclick="fill('美联储降息时间')">美联储降息</button>
+    <button class="chip" onclick="fill('黄金走势')">黄金走势</button>
+    <button class="chip" onclick="fill('AI 泡沫')">AI 泡沫</button>
+    <button class="chip" onclick="fill('中国房价')">中国房价</button>
+    <button class="chip" onclick="fill('台海风险')">台海风险</button>
+    <button class="chip" onclick="fill('美股崩盘')">美股崩盘</button>
+    <button class="lucky-btn" onclick="lucky()">I'm feeling lucky ✦</button>
+  </div>
+</section>
+
+<!-- Result area -->
+<div class="result-area" id="result-area">
+  <div class="result-header">
+    <div class="result-query" id="result-query"></div>
+    <div class="result-badge" id="result-badge">ORACLE ANALYSIS</div>
+  </div>
+  <div class="result-body" id="result-body">
+    <div class="thinking" id="thinking">
+      <span>Querying 14 data sources</span>
+      <span class="thinking-dots"><span>·</span><span>·</span><span>·</span></span>
+    </div>
+  </div>
+  <div class="sources-bar" id="sources-bar" style="display:none"></div>
+</div>
+
+<!-- Examples -->
+<div class="examples">
+  <div class="examples-label">— Example questions —</div>
+  <div class="examples-grid">
+    <div class="ex-card" onclick="ask('WW3 的概率是多少？')">
+      <div class="ex-q">WW3 的概率是多少？</div>
+      <div class="ex-meta"><span class="ex-tag t-geo">geopolitics</span><span class="ex-tag t-comm">prediction mkt</span></div>
+    </div>
+    <div class="ex-card" onclick="ask('比特币到底了吗？')">
+      <div class="ex-q">比特币到底了吗？</div>
+      <div class="ex-meta"><span class="ex-tag t-crypto">crypto</span><span class="ex-tag t-macro">derivatives</span></div>
+    </div>
+    <div class="ex-card" onclick="ask('AI 是不是泡沫？')">
+      <div class="ex-q">AI 是不是泡沫？</div>
+      <div class="ex-meta"><span class="ex-tag t-eq">equities</span><span class="ex-tag t-eq">insider</span></div>
+    </div>
+    <div class="ex-card" onclick="ask('现在适合买黄金吗？')">
+      <div class="ex-q">现在适合买黄金吗？</div>
+      <div class="ex-meta"><span class="ex-tag t-comm">commodities</span><span class="ex-tag t-macro">CFTC COT</span></div>
+    </div>
+    <div class="ex-card" onclick="ask('美联储今年还会降息吗？')">
+      <div class="ex-q">美联储今年还会降息吗？</div>
+      <div class="ex-meta"><span class="ex-tag t-macro">rates</span><span class="ex-tag t-macro">FedWatch</span></div>
+    </div>
+    <div class="ex-card" onclick="ask('NVDA 期权溢价是不是太高了？')">
+      <div class="ex-q">NVDA 期权溢价是不是太高了？</div>
+      <div class="ex-meta"><span class="ex-tag t-eq">options IV</span><span class="ex-tag t-eq">Greeks</span></div>
+    </div>
+    <div class="ex-card" onclick="ask('台海冲突风险市场怎么定价的？')">
+      <div class="ex-q">台海冲突风险市场怎么定价的？</div>
+      <div class="ex-meta"><span class="ex-tag t-geo">geopolitics</span><span class="ex-tag t-eq">TSMC discount</span></div>
+    </div>
+    <div class="ex-card" onclick="ask('铜金比在说什么？')">
+      <div class="ex-q">铜金比在说什么？</div>
+      <div class="ex-meta"><span class="ex-tag t-macro">macro</span><span class="ex-tag t-comm">risk signals</span></div>
+    </div>
+    <div class="ex-card" onclick="ask('中国房价还会继续跌多久？')">
+      <div class="ex-q">中国房价还会继续跌多久？</div>
+      <div class="ex-meta"><span class="ex-tag t-geo">China</span><span class="ex-tag t-macro">World Bank</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Methodology -->
+<div id="methodology" class="method-strip">
+  <div class="section-label" style="margin-bottom:28px">How it works</div>
+  <div class="method-grid">
+    <div class="method-card">
+      <div class="method-num">01</div>
+      <div class="method-title">Decompose</div>
+      <div class="method-desc">Extract core variable, time horizon, and priceability from your question.</div>
+    </div>
+    <div class="method-card">
+      <div class="method-num">02</div>
+      <div class="method-title">Select signals</div>
+      <div class="method-desc">Pick 3+ independent sources from the signal menu. Never a single data point.</div>
+    </div>
+    <div class="method-card">
+      <div class="method-num">03</div>
+      <div class="method-title">Fetch in parallel</div>
+      <div class="method-desc">14 providers queried simultaneously. Partial failures don't halt the analysis.</div>
+    </div>
+    <div class="method-card">
+      <div class="method-num">04</div>
+      <div class="method-title">Contradiction logic</div>
+      <div class="method-desc">Divergence between markets is a signal. Time-align before concluding.</div>
+    </div>
+    <div class="method-card">
+      <div class="method-num">05</div>
+      <div class="method-title">Structured report</div>
+      <div class="method-desc">Signal tables → scenario analysis → probability estimates → watchlist.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Data sources -->
+<div id="sources" class="sources-section">
+  <div class="section-label">— Data sources (14 providers, 12 zero-dependency) —</div>
+  <div class="sources-grid">
+    <div class="src-card"><div class="src-name">Polymarket</div><div class="src-type">prediction market</div><div class="src-desc">Event probability contracts priced by real money.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">Kalshi</div><div class="src-type">regulated binary</div><div class="src-desc">SEC-regulated US political & economic event contracts.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">US Treasury</div><div class="src-type">yield curve</div><div class="src-desc">10Y–2Y spread, breakeven inflation, real rates.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">CFTC COT</div><div class="src-type">positioning</div><div class="src-desc">Institutional vs speculative net positions in futures.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">Deribit</div><div class="src-type">crypto derivatives</div><div class="src-desc">BTC/ETH futures term structure and options IV.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">CoinGecko</div><div class="src-type">crypto spot</div><div class="src-desc">Market cap, dominance, ATH distance, 24h vol.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">SEC EDGAR</div><div class="src-type">insider trades</div><div class="src-desc">Form 4 buy/sell cadence as directional signal.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">Yahoo Finance</div><div class="src-type">price history</div><div class="src-desc">Stocks, ETFs, FX, commodities daily/weekly.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">YFinance Options</div><div class="src-type">options chain</div><div class="src-desc">IV, Greeks, put/call ratio, max pain, implied move.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">Fear & Greed</div><div class="src-type">sentiment</div><div class="src-desc">CNN composite of 7 price signals, 0–100 score.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">CME FedWatch</div><div class="src-type">rate probabilities</div><div class="src-desc">FOMC rate change probabilities from Fed Funds futures.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">BIS</div><div class="src-type">central banks</div><div class="src-desc">Policy rates, credit-to-GDP gap across countries.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">World Bank</div><div class="src-type">macro indicators</div><div class="src-desc">GDP, trade flows, population for cross-country macro.</div><span class="src-free">free · no key</span></div>
+    <div class="src-card"><div class="src-name">Web Search</div><div class="src-type">supplementary</div><div class="src-desc">VIX, MOVE, CDS, HY spread, BDI freight rates.</div><span class="src-free">free · no key</span></div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-left">© 2026 Everything in Price · Powered by Digital Oracle</div>
+  <div class="footer-right">
+    <a href="https://github.com/komako-workshop/digital-oracle" target="_blank">GitHub</a>
+    <a href="https://github.com/komako-workshop/digital-oracle/blob/main/SKILL.md" target="_blank">SKILL.md</a>
+  </div>
+</footer>
+
+<script>
+const TICKS = [
+  {sym:'GC=F',px:'3,342',chg:'+0.8%',up:true},{sym:'BTC',px:'103,820',chg:'+2.1%',up:true},
+  {sym:'SPY',px:'597.4',chg:'-0.3%',up:false},{sym:'CL=F',px:'71.2',chg:'-1.1%',up:false},
+  {sym:'DXY',px:'104.5',chg:'+0.2%',up:true},{sym:'UST10Y',px:'4.42%',chg:'+3bp',up:true},
+  {sym:'VIX',px:'16.8',chg:'-0.9',up:false},{sym:'ETH',px:'3,940',chg:'+1.4%',up:true},
+  {sym:'USDCNY',px:'7.24',chg:'+0.1%',up:true},{sym:'HG=F',px:'4.82',chg:'-0.5%',up:false},
+  {sym:'AAPL',px:'214.3',chg:'+0.6%',up:true},{sym:'NVDA',px:'1,087',chg:'+1.8%',up:true},
+  {sym:'TSMC',px:'201.4',chg:'-0.4%',up:false},{sym:'GLD',px:'306.2',chg:'+0.9%',up:true},
+];
+const track = document.getElementById('ticker');
+[...TICKS,...TICKS].forEach(t => {
+  const el = document.createElement('div');
+  el.className = 'tick-item';
+  el.innerHTML = `<span class="tick-sym">${t.sym}</span><span class="tick-px">${t.px}</span><span class="${t.up?'tick-up':'tick-dn'}">${t.chg}</span>`;
+  track.appendChild(el);
+});
+
+const LUCKY = [
+  '中国房价还会继续跌多久？','黄金和比特币，哪个更值得持有？',
+  '美股今年会崩盘吗？','台海冲突的市场定价是多少？',
+  '铜金比在说什么？','美联储的降息路径市场怎么定价？'
+];
+
+function fill(q) { document.getElementById('q').value = q; document.getElementById('q').focus(); }
+function lucky() { ask(LUCKY[Math.floor(Math.random()*LUCKY.length)]); }
+function ask(q) { document.getElementById('q').value = q; doSearch(); }
+
+document.getElementById('q').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+
+async function doSearch() {
+  const q = document.getElementById('q').value.trim();
+  if (!q) return;
+
+  const area = document.getElementById('result-area');
+  const body = document.getElementById('result-body');
+  const sourcesBar = document.getElementById('sources-bar');
+  const btn = document.getElementById('go-btn');
+
+  area.classList.add('visible');
+  area.scrollIntoView({behavior:'smooth', block:'start'});
+  document.getElementById('result-query').textContent = q;
+  document.getElementById('result-badge').textContent = 'ORACLE ANALYSIS';
+  sourcesBar.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'QUERYING...';
+
+  body.innerHTML = `<div class="thinking"><span>Querying 14 data sources</span><span class="thinking-dots"><span>·</span><span>·</span><span>·</span></span></div>`;
+
+  const SYSTEM = `You are Digital Oracle — an AI that answers macroeconomic, geopolitical, and market questions ONLY using trading data signals.
+
+Core rules:
+1. Never cite news, opinions, or analyst reports as causal evidence. Only market-priced data.
+2. Always cover at least 3 independent signal dimensions.
+3. Label each signal's time horizon (short/medium/long term).
+4. Find divergences between markets and explain them.
+5. Output structured markdown following this template:
+
+## Data Summary
+(Use sub-sections like ### Layer 1: Prediction Markets, ### Layer 2: Safe-Haven Assets, etc. Include a markdown table per layer with columns: Signal | Current Reading | What It's Saying)
+
+## Analysis
+### Resonance signals
+(what converges and what judgment it forms)
+### Key divergences
+(what conflicts, and who is more credible)
+### Time stratification
+(short-term vs medium-term vs long-term signals)
+
+## Probability Estimates
+(A markdown table: Scenario | Probability | Basis)
+### Most likely path: [one sentence]
+**Core logic chain:** 2-3 paragraphs of reasoning from data to conclusion.
+
+## Conclusion
+> [One-sentence summary with a specific probability estimate if possible]
+
+### Sub-conclusions
+(table: Dimension | Judgment | Confidence)
+
+### Signals to monitor
+(table: Signal | Current value | Threshold | Meaning if crossed)
+
+---
+*Data sources used: [list them]*
+
+Be direct, quantitative, and analytical. Use USD instead of $ to avoid LaTeX rendering. Keep tables clean markdown. Respond in the same language as the user's question.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM,
+        messages: [{ role: 'user', content: q }]
+      })
+    });
+
+    const data = await resp.json();
+    const text = data.content?.map(b => b.text||'').join('\n') || '分析失败，请重试。';
+    renderMarkdown(text);
+
+    // sources
+    const srcs = detectSources(text);
+    if (srcs.length) {
+      sourcesBar.innerHTML = srcs.map(s => `<span class="src-chip">${s}</span>`).join('');
+      sourcesBar.style.display = 'flex';
+    }
+  } catch(e) {
+    body.innerHTML = '<p style="color:var(--dn)">请求失败，请检查网络或稍后重试。</p>';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'ORACLE SEARCH';
+}
+
+function detectSources(text) {
+  const map = {
+    'Polymarket':'Polymarket','Kalshi':'Kalshi','CFTC':'CFTC COT',
+    'Treasury':'US Treasury','Deribit':'Deribit','CoinGecko':'CoinGecko',
+    'EDGAR':'SEC EDGAR','Yahoo':'Yahoo Finance','Fear':'Fear & Greed',
+    'FedWatch':'CME FedWatch','BIS':'BIS','World Bank':'World Bank',
+    'yfinance':'YFinance','VIX':'VIX/Web'
+  };
+  return Object.entries(map).filter(([k])=>text.includes(k)).map(([,v])=>v);
+}
+
+function renderMarkdown(md) {
+  const body = document.getElementById('result-body');
+  let html = md
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:20px 0">')
+    .replace(/^\*(.+)$/gm, '<p style="font-size:11px;color:var(--faint)">$1</p>');
+
+  // tables
+  html = html.replace(/(\|.+\|\n)+/g, match => {
+    const rows = match.trim().split('\n');
+    let t = '<table>';
+    rows.forEach((row, i) => {
+      if (row.match(/^\|[-| ]+\|$/)) return;
+      const cells = row.split('|').filter((_,j,a)=>j>0&&j<a.length-1);
+      t += '<tr>';
+      cells.forEach(c => { t += i===0 ? `<th>${c.trim()}</th>` : `<td>${c.trim()}</td>`; });
+      t += '</tr>';
+    });
+    return t + '</table>';
+  });
+
+  // paragraphs
+  html = html.replace(/^(?!<[h2h3btph]|<block|<hr|<table|<\/table|<tr|<th|<td)(.+)$/gm, '<p>$1</p>');
+  html = html.replace(/<p><\/p>/g, '');
+
+  body.innerHTML = html;
+}
+</script>
+</body>
+</html>
